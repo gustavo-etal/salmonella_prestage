@@ -80,7 +80,7 @@ salmo$Bootie_Swabs<-ifelse(salmo$Bootie_Swabs ="NA", Negative, salmo$Bootie_Swab
 ## relevel of Serotype
 salmo%>%
   mutate(Serotype = revalue(Serotype,
-                                c("16:d:-"="16:d:1,2", "Positive"="Positive")))
+                                c("16:d:-"="16:d:1,2", "Positive"="Positive", "6,7:r:"="6,7:r", "1,4,5,12:i:"="1,4,5,12:i", "1,4,5,12:"="1,4,5,12", "Rough "O":r:1,5"="Rough O:r:1,5","TYPH VAR.O:5-"="TYPH VAR. O:5", "Typhimirium"="Typhimurium", "OUAKAM"="Ouakam", "Lillie"="Lille","Bertaq"="Berta")))
 
 
 #16:d:-        --- 16:d:1,2
