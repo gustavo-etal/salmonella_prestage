@@ -24,14 +24,14 @@ require(plyr)
 require(dplyr)
 
 
-
 # Erase workplace
 rm(list = ls())
 cat("\014")
 
+## list of farm and location
 pop<-read_csv("./data/PrestageFarms_list_2020.csv");pop
 
-
+## salmonela time series
 salmo<-read_csv("./data/Growout_Bootie.csv");salmo
 
 ## transform to date formats
@@ -39,7 +39,6 @@ salmo$Start_Date<-as.Date (as.character(salmo$Start_Date), format= "%m/%d/%y")
 salmo$Process_Date<-as.Date (as.character(salmo$Process_Date), format= "%m/%d/%y")
 
 ## transform as.factors
-
 salmo<-salmo%>%
   mutate(Project=`Project#`)%>%
   select(-`Project#`)
@@ -49,34 +48,28 @@ salmo$Prod_Type<-as.factor(salmo$Prod_Type)
 salmo$Sex<-as.factor(salmo$Sex)
 salmo$Breed<-as.factor(salmo$Breed)
 salmo$Brooder<-as.factor(salmo$Brooder)
+salmo$Bootie_Swabs<-as.factor(as.character(salmo$Bootie_Swabs))
 salmo$Grower<-as.factor(salmo$Grower)
-salmo$Bootie_Swabs<-as.factor(salmo$Bootie_Swabs)
 salmo$Group<-as.factor(salmo$Group)
 salmo$Serotype<-as.factor(salmo$Serotype)
 salmo$Project<-as.factor(salmo$Project)
 str(salmo)
 
-## relevel prod. type
+## relabel prod. type
 ## check the sex<>production type -- Ask 
 
 salmo<-salmo%>%
   mutate(Prod_Type = revalue(Prod_Type,
                                 c("Conv"="CONV", "Conv."="CONV")))
 
-## relevel swabs
+## relabel swabs
 salmo<-salmo%>%
   mutate(Bootie_Swabs = revalue(Bootie_Swabs,
                 c("positive"="Positive", "Positve"="Positive",
                   "Positiive"="Positive")))
 
-
-
-## relevel prod. type
-salmo<-salmo%>%
-  mutate(Bootie_Swabs = revalue(Bootie_Swabs,
-                                c("positive"="Positive", "Positive"="Positive")))
-
-salmo$Bootie_Swabs<-ifelse(salmo$Bootie_Swabs ="NA", Negative, salmo$Bootie_Swabs)
+## if NA we make them negative
+salmo$Bootie_Swabs[is.na(salmo$Bootie_Swabs)] = "Negative"
 
 ## relevel of Serotype
 table(salmo$Serotype)
