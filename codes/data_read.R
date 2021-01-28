@@ -23,6 +23,9 @@ library(gt)
 require(plyr)
 require(dplyr)
 library(ggrepel)
+### Process_Date is two weeks before that column the samples are collected
+### Start_date 5 weeks birds fo from brooder et o grower.
+
 
 
 # Erase workplace
