@@ -24,6 +24,7 @@ require(plyr)
 require(dplyr)
 library(ggrepel)
 ### Process_Date is two weeks before that column the samples are collected
+## just be aware that it will change more likely to be 4 week (02/04/2021)
 ### Start_date 5 weeks birds fo from brooder et o grower.
 
 
@@ -182,9 +183,8 @@ nc <- st_read(system.file("shape/nc.shp", package="sf"))
 ggplot() +
   geom_sf(data = nc,  colour = "grey", alpha = 0.005) +
   #coord_sf(xlim = lon_bounds, ylim = lat_bounds)+
-  geom_point(data = data, aes(x = LONG,
-                              y = LAT), 
-             size =1, color = 'red', fill="Serotype") +
+  geom_point(data = data %>% drop_na(Serotype), aes(x = LONG,
+                              y = LAT))+
   ggtitle("Salmonella distribution")+
   # geom_label_repel(data = data , nudge_x = 0, nudge_y = -0,
   #                  aes(x = LONG, 
