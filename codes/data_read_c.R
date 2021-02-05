@@ -27,6 +27,7 @@ library(ggrepel)
 ## just be aware that it will change more likely to be 4 week (02/04/2021)
 ### Start_date 5 weeks birds fo from brooder et o grower.
 
+## remove PF from FARM + Hatchery and Feed mill
 
 
 # Erase workplace
@@ -103,6 +104,8 @@ table(salmo$Serotype)
 
 
 # descriptive stats ----
+# total poulaiton si theh list of famrm from 2020
+
 ## now free description
 salmo%>%
   group_by(Serotype)%>%
