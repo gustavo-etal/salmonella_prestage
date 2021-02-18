@@ -104,10 +104,11 @@ table(salmo$Serotype)
 
 
 # descriptive stats ----
-# total poulaiton si theh list of famrm from 2020
+# total population is the list of farm from 2020
 
 ## now free description
 salmo%>%
+  filter(!Serotype=="0")%>%
   group_by(Serotype)%>%
   dplyr::count(Serotype, sort = TRUE)%>%
   drop_na()%>%
@@ -117,17 +118,32 @@ salmo%>%
 
 
 salmo%>%
+  filter(!Serotype=="0")%>%
   group_by(Prod_Type)%>%
   dplyr::count(Serotype, sort = TRUE)%>%
+  mutate(prop = n/sum(n)*100)%>%
   ungroup() %>%
   drop_na()%>%
-  arrange(desc(n))%>% 
-  ggplot(aes(fct_infreq(Prod_Type,n), n)) +
-  geom_bar(stat="identity") + coord_flip()+
-  scale_y_continuous(breaks = seq(0,2500,by = 10))+
-  labs(x="Production type", y="volume")+
-  theme(text = element_text(size = 12, face = "bold"),
-        legend.title = element_text(size = 12))
+  arrange(desc(prop))%>% 
+  ggplot(aes(x=Serotype , y=prop,
+             fill=Prod_Type)) +
+  geom_bar(stat='identity')+
+  labs(fill = "Farm type") +
+  scale_y_continuous(labels = function(x) paste0(x*2, "%"),name = "Percent of simulations (%)")+
+  ylab("Proportion of positive")+
+  xlab("")+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    #axis.line.y = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 18,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 18),
+    axis.title.x = element_text(size = 22, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 22, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 18, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
 
 ggsave("./Fig/freq_prod_type.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
 
