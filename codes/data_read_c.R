@@ -104,21 +104,15 @@ salmo<-salmo%>%
 
 table(salmo$Serotype)
 
-plot.mov <- gtac %>%
-  ggplot() +
-  geom_line(aes(DATA_EMISSAO, BOVINO_TOT))+
-  scale_x_date(date_breaks = "1 month")+
-  theme(axis.text.x=element_text(angle=90,hjust=1))
-
 
 salmo%>%
   filter(!Serotype=="0")%>%
   #group_by(Start_Date)%>%
-  dplyr::count(Serotype,Start_Date, sort = TRUE)%>%
+  dplyr::count(Process_Date, sort = TRUE)%>%
   #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
   ungroup() %>%
   drop_na()%>%
-  mutate(month = format(Start_Date, "%m"), year = format(Start_Date, "%Y"))%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
   ggplot(aes(x = month, y = n)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ year, ncol = 3) +
@@ -136,6 +130,7 @@ theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
     color="black",size=1.5, linetype="solid"
   )         
 )
+
 ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
@@ -143,11 +138,11 @@ ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, 
 salmo%>%
   filter(!Serotype=="0")%>%
   #group_by(Start_Date)%>%
-  dplyr::count(Serotype,Start_Date,Serotype, sort = TRUE)%>%
+  dplyr::count(Serotype,Process_Date, sort = TRUE)%>%
   #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
   ungroup() %>%
   drop_na()%>%
-  mutate(month = format(Start_Date, "%m"), year = format(Start_Date, "%Y"))%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
   ggplot(aes(x = month, y = n, fill=Serotype)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ year, ncol = 3) +
@@ -166,18 +161,77 @@ salmo%>%
     )         
   )
 
-ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+
+ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 
-## by farm tuype
-salmo%>%
-  filter(!Serotype=="0")%>%
+## by farm type
+atbfree<-salmo%>%
+  filter(!Serotype=="0" & Prod_Type=="Antibiotic-free")%>%
   #group_by(Start_Date)%>%
-  dplyr::count(Serotype,Start_Date,Prod_Type, sort = TRUE)%>%
+  dplyr::count(Process_Date,Serotype, sort = TRUE)%>%
   #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
   ungroup() %>%
   drop_na()%>%
-  mutate(month = format(Start_Date, "%m"), year = format(Start_Date, "%Y"))%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
+  ggplot(aes(x = month, y = n, fill=Serotype)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ year, ncol = 3) +
+  labs(title = "Montly Total Salmonella-Antibiotic-free",
+       y = "Number of positive cases",
+       x = "Month") + theme_bw(base_size = 15)+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 15 ),#,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 15),
+    axis.title.x = element_text(size = 15, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 15, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 15, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
+
+
+
+commercial<-salmo%>%
+  filter(!Serotype=="0" & Prod_Type=="Conventional")%>%
+  #group_by(Start_Date)%>%
+  dplyr::count(Process_Date,Serotype, sort = TRUE)%>%
+  #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup() %>%
+  drop_na()%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
+  ggplot(aes(x = month, y = n, fill=Serotype)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ year, ncol = 3) +
+  labs(title = "Montly Total Salmonella-commercial",
+       y = "Number of positive cases",
+       x = "Month") + theme_bw(base_size = 15)+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 15 ),#,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 15),
+    axis.title.x = element_text(size = 15, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 15, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 15, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
+
+library(ggpubr)
+ggarrange(atbfree , commercial, nrow=2)
+
+## by farm type
+salmo%>%
+  filter(!Serotype=="0")%>%
+  #group_by(Start_Date)%>%
+  dplyr::count(Process_Date,Prod_Type, sort = TRUE)%>%
+  #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup() %>%
+  drop_na()%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
   ggplot(aes(x = month, y = n, fill=Prod_Type)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ year, ncol = 3) +
@@ -195,6 +249,7 @@ salmo%>%
       color="black",size=1.5, linetype="solid"
     )         
   )
+
 
 ggsave("./Fig/freq_year_month_production_type.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
