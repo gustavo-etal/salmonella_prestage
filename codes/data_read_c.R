@@ -127,7 +127,9 @@ salmo%>%
   arrange(desc(prop))%>% 
   ggplot(aes(x=Serotype , y=prop,
              fill=Prod_Type)) +
-  geom_bar(stat='identity')+
+ # geom_bar(stat='identity')+
+  geom_bar(position="dodge",stat='identity')+
+  geom_text(aes(label=prop),stat='identity',position=position_dodge(0.9),vjust=-0.2)+
   labs(fill = "Farm type") +
   scale_y_continuous(labels = function(x) paste0(x*2, "%"),name = "Percent of simulations (%)")+
   ylab("Proportion of positive")+
