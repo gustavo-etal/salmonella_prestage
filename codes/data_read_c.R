@@ -102,6 +102,9 @@ salmo<-salmo%>%
 table(salmo$Serotype)
 
 
+## commercial and ATB-free
+## Reclassification by year and number of lots with commercial and ATB-free
+
 salmo%>%
   filter(!Serotype=="0")%>%
   #group_by(Start_Date)%>%
@@ -595,7 +598,7 @@ plot(lc, type = "graph",
 
 
 
-#montly netwrok
+#monthly network
 
 salmo$month <- floor_date(salmo$Process_Date, "month")
 time_lags <- unique(sort(salmo$month))
