@@ -131,7 +131,7 @@ theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
   )         
 )
 
-ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+#ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
 ## by serotype
@@ -162,7 +162,7 @@ salmo%>%
   )
 
 
-ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
+#ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 
 ## by farm type
@@ -251,7 +251,7 @@ salmo%>%
   )
 
 
-ggsave("./Fig/freq_year_month_production_type.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+#ggsave("./Fig/freq_year_month_production_type.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
 # descriptive stats ----
@@ -296,7 +296,7 @@ salmo%>%
     )         
   )
 
-ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+#ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
 p<-salmo%>%
@@ -358,7 +358,7 @@ p1<-salmo%>%
 
 ggarrange(p,p1)
 
-ggsave("./Fig/freq_prod_type.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+#ggsave("./Fig/freq_prod_type.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
 
 
 salmo%>%
