@@ -20,6 +20,7 @@ library(ggraph);library(ggpubr)
 library(epicontacts)
 library(openxlsx);library(lubridate)
 library(gt)
+library(tidygraph)
 require(plyr)
 require(dplyr)
 library(ggpubr)
@@ -163,6 +164,34 @@ salmo%>%
 
 
 #ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
+
+
+## by serotype
+salmo%>%
+  filter(!Group=="0")%>%
+  #group_by(Start_Date)%>%
+  dplyr::count(Group,Process_Date, sort = TRUE)%>%
+  #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup() %>%
+  drop_na()%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
+  ggplot(aes(x = month, y = n, fill=Group)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ year, ncol = 3) +
+  labs(title = "Montly Total Salmonella",
+       y = "Number of positive cases",
+       x = "Month") + theme_bw(base_size = 15)+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 15 ),#,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 15),
+    axis.title.x = element_text(size = 15, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 15, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 15, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
 
 
 ## by farm type
@@ -428,6 +457,8 @@ names(pop)
 data<-salmo%>%
   left_join(pop, by="Grower")
 
+nas<- data%>%
+  distinct(Grower)
 
 ### distribution 
 
@@ -471,7 +502,10 @@ salmo<-salmo%>%
 # edge list
 nodes <- unique(c(salmo$Brooder,salmo$Grower))
 
-# netwrork
+# GM check for farm name of missing in pop that are not in the
+# nodes list
+
+# networks
 g <- simplify(graph_from_data_frame
               (salmo[,c("Brooder","Grower")],
                 directed=TRUE))
@@ -485,7 +519,12 @@ igraph::degree(g,mode="in")
 
 
 # table by degree
-datatable(arrange(data_frame(person=V(g)$name, centrality_degree=V(g)$size), desc(centrality_degree)))
+move<-datatable(arrange(data_frame(person=V(g)$name, 
+                        centrality_degree=V(g)$size),
+                        desc(centrality_degree)))
+datatable(as.data.frame(move))
+
+gtsave(move, file="degree.rtf")
 #plot(g)
 
 
@@ -535,7 +574,7 @@ g1 <- simplify(graph_from_data_frame
               (salmo[,c("Brooder","Grower")]))
 
 graph <- as_tbl_graph(pnet) %>% 
-  mutate(In = centrality_degree(),
+  mutate(In = centrality_degree(weights = NULL, mode = "in", loops=FALSE, normalized=FALSE),
          community = as.factor(group_infomap()))
 
 
