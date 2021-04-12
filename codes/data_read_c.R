@@ -100,11 +100,14 @@ salmo<-salmo%>%
                                   "1,4,5,12:"="1,4,5,12",
                                   "1,4,5,12:i:-"="1,4,5,12:i" )))
 
-table(salmo$Serotype)
 
+table(salmo$Serotype)
+table(salmo$Group)
 
 ## commercial and ATB-free
 ## Reclassification by year and number of lots with commercial and ATB-free
+
+## group "0" are the negatives
 
 salmo%>%
   filter(!Serotype=="0")%>%
@@ -132,7 +135,45 @@ theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
   )         
 )
 
+
+
 #ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+
+## do also by the group
+tablegroup<-salmo%>%
+  filter(!Group=="0")%>%
+  #group_by(Start_Date)%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
+  dplyr::count(Group,year,month, sort = TRUE)%>%
+  arrange(year,month)
+  
+salmo%>%
+  filter(!Group=="0")%>%
+  #group_by(Start_Date)%>%
+  dplyr::count(Group,Process_Date, sort = TRUE)%>%
+  #mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup() %>%
+  drop_na()%>%
+  mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
+  ggplot(aes(x = month, y = n, fill=Group, label = n)) +
+  geom_bar(stat = "identity") +
+  geom_text(size = 3, position = position_stack(vjust = 0.5)) +
+  facet_wrap(~ year, ncol = 3) +
+  labs(title = "Montly Total Salmonella",
+       y = "Number of positive cases",
+       x = "Month") + theme_bw(base_size = 15)+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 15 ),#,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 15),
+    axis.title.x = element_text(size = 15, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 15, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 15, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
+
 
 
 ## by serotype
@@ -278,6 +319,45 @@ salmo%>%
       color="black",size=1.5, linetype="solid"
     )         
   )
+
+
+## Table1 ### ########################################################################################
+table1<-salmo%>%
+  filter(!Serotype=="0")%>%
+  #group_by(Sex)%>%
+  dplyr::count(Serotype, sort = TRUE)%>%
+  mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup()
+
+write.csv(table1, file="./fig/table1.csv")
+
+## Table2 ###
+table2<-salmo%>%
+  filter(!Group=="0")%>%
+  #group_by(Sex)%>%
+  dplyr::count(Group, sort = TRUE)%>%
+  mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup()
+
+write.csv(table2, file="./fig/table2.csv")
+
+
+## Table3 ###
+salmo%>%
+  filter(!Group=="0" | Group=="C1")%>%
+  #group_by(Sex)%>%
+  dplyr::count(Serotype, sort = TRUE)%>%
+  mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup()
+
+salmo%>%
+  filter(!Group=="0" | Group=="B")%>%
+  #group_by(Sex)%>%
+  dplyr::count(Serotype, sort = TRUE)%>%
+  mutate(prop = n/sum(n)*100)%>% # will add a new variable name=prop
+  ungroup()
+
+
 
 
 #ggsave("./Fig/freq_year_month_production_type.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
