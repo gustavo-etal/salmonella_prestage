@@ -2,7 +2,7 @@
 library(tidyverse)
 library(lubridate)
 library(reshape2)
-library(scales)
+library(scales) 
 library(igraph)
 library(ggalluvial)
 library(epinemo)
