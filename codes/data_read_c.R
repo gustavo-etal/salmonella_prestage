@@ -550,18 +550,32 @@ lat_bounds <- c(-35.23,-34.44 )
 ## get NC shape
 nc <- st_read(system.file("shape/nc.shp", package="sf"))
 
+box<-data%>%filter(!Group==0)%>%
+  drop_na(LONG)%>%
+  group_by(LONG,LAT)%>%
+  dplyr::count(Group, sort = TRUE)
+
+
 ggplot() +
   geom_sf(data = nc,  colour = "grey", alpha = 0.005) +
   #coord_sf(xlim = lon_bounds, ylim = lat_bounds)+
-  geom_point(data = data %>% drop_na(Serotype)%>% filter(!Serotype==0),
-             aes(x = LONG,y = LAT))+
+  geom_point(data = data %>% drop_na(Group)%>% filter(!Group==0)%>%
+               filter(!Group==0)%>%
+               drop_na(LONG)%>%
+               group_by(LONG,LAT)%>%
+               dplyr::count(Group, sort = TRUE)%>%
+               mutate(n=as.numeric(n)),
+             aes(x = LONG,y = LAT,  color=Group))+
+  coord_sf(
+    xlim = c(-79.9, -77.2),
+    ylim = c(34.2, 35.4),
+    expand = FALSE)
   ggtitle("Salmonella distribution")+
   # geom_label_repel(data = data , nudge_x = 0, nudge_y = -0,
   #                  aes(x = LONG, 
   #                      y = LAT,
   #                      label = as.factor(Serotype)))+
-  theme(axis.title = element_blank())+
-  facet_wrap(~Serotype )
+  theme(axis.title = element_blank())
 
 
 data%>%
@@ -575,10 +589,10 @@ data%>%
   facet_wrap(~ as.factor(Process_Date))
 
 
-## networks Brooder>>Grower
+## networks Brooder>>Grower ---
 
-salmo<-salmo%>%
-  drop_na(Brooder,Grower)
+salmo <- read_csv("salmo.csv")
+
 # edge list
 nodes <- unique(c(salmo$Brooder,salmo$Grower))
 
@@ -598,76 +612,6 @@ igraph::degree(g,mode="out")
 igraph::degree(g,mode="in") 
 
 
-# table by degree
-move<-datatable(arrange(data_frame(person=V(g)$name, 
-                        centrality_degree=V(g)$size),
-                        desc(centrality_degree)))
-datatable(as.data.frame(move))
-
-gtsave(move, file="degree.rtf")
-#plot(g)
-
-
-# netwrork
-salmonet<-salmo%>%
-  distinct(Brooder,Grower)
-
-## list of farms
-popnet<-pop%>%
-  select(Grower,BIRDS,TYPE)
-
-
-pnet<-tbl_graph(popnet,salmonet)
-plot(pnet)
-
-
-pnet %>% activate(edges) %>% as_tibble()
-
-
-pnet_h <- pnet %>% activate(edges)
-plot(pnet_h)
-
-
-pnet_h %>%
-  ggraph(layout = "kk") +
-  geom_node_point() +
-  geom_edge_link() 
-
-
-pnet_h %>%
-  activate(nodes) %>%
-  mutate(centrality = centrality_betweenness()) %>%
-  ggraph(layout = "graphopt") +
-  geom_edge_link(width = 1, colour = "lightgray") +
-  geom_node_point(aes(size = centrality, colour = centrality)) +
-  geom_node_text(aes(label = media), repel = TRUE)+
-  scale_color_gradient(low = "yellow", high = "red")+
-  theme_graph()
-
-
-pnet_h %>%
-  activate(nodes) %>%
-  mutate(centrality = centrality_betweenness()) 
-
-
-g1 <- simplify(graph_from_data_frame
-              (salmo[,c("Brooder","Grower")]))
-
-graph <- as_tbl_graph(pnet) %>% 
-  mutate(In = centrality_degree(weights = NULL, mode = "in", loops=FALSE, normalized=FALSE),
-         community = as.factor(group_infomap()))
-
-
-## visual
-ggraph(graph, layout = 'kk') +
-  geom_edge_link(alpha=0.4) +
-  geom_node_point(aes(size = In, colour= In ))+
-  geom_node_text(aes(filter=In > 10, label = Grower), repel = TRUE)+
-  scale_colour_gradient(low = "#00008B", high = "#63B8FF")+
-  theme_graph()
-
-
-
 node.level.network <- data.frame(Mean_degree= mean(degree(g, mode= "all")),
                                  Nos = vcount(g),
                                  edge =  ecount(g),
@@ -679,7 +623,7 @@ node.level.network <- data.frame(Mean_degree= mean(degree(g, mode= "all")),
                                  Clustering_coefficient = transitivity(g),
                                  Centralization = centr_degree(g)$centralization)
 
-grid.table(node.level.network)
+node.level.network
 
 
 g1<-as_adjacency_matrix(g, attr="weight")
@@ -695,13 +639,10 @@ ggnet2(net0,
        label = TRUE, 
        label.size = 3, 
        arrow.size = 3, 
-       #size = "degree",
+       size = "degree",
        arrow.gap = .03,
-       palette = 'Set2', mode = "kamadakawai")+
-  theme(legend.position = "bottom")+
-  ggtitle("full netwrok")
-
-
+      mode = "circrand")+
+  theme(legend.position = "bottom")
 
 
 ## cluster formation-----
@@ -713,7 +654,6 @@ plot(lc, type = "graph",
      nspace = 10,
      cid.cex=0.5,
      shownodesin=1)
-
 
 
 
@@ -737,16 +677,16 @@ for ( j in time_lags) {
                                       directed=TRUE))
   
   # calculando os parametros da rede
-  rede.estatica <- data.frame(Mean_degree  = mean(degree(g, mode= "all")),
-                              farms = vcount(g),
-                              edges_i =  ecount(g),
+  rede.estatica <- data.frame(Degree  = mean(degree(g, mode= "all")),
+                              Farms = vcount(g),
+                              Links =  ecount(g),
                               #diameter_i = diameter(g),
                               #Animais = sum(banco.month$BOVINO_TOT),
                               #GSCC = sort(clusters(g, "strong")$csize, decreasing = T)[1],
                               GWCC = sort(clusters(g, "weak")$csize, decreasing = T)[1],
                               #Mean_betweenness = mean(betweenness(g)), 
                               #Clustering_coefficient = transitivity(g),
-                              Centralization = centr_degree(g)$centralization,
+                              #Centralization = centr_degree(g)$centralization,
                               month = unique(banco.month$month) )
   rede.temporal <- as.data.frame(rbind(rede.temporal, rede.estatica)) 
   ienesimas <- c(ienesimas, j)
@@ -766,43 +706,22 @@ data <- melt(rede.temporal, id = c("month"))
 
 
 data %>%
-  mutate(Date = as.Date(month)) %>%
-  ggplot(aes(x= Date, y = value))+
-  geom_line(colour = "red", size = .5)+
-  geom_point(colour = "red", size  = .5)+
+  #mutate(Date = as.Date(month)) %>%
+  ggplot(aes(x= month, y = value))+
+  geom_bar(stat = "identity",aes(fill = variable))+
+  #geom_point(colour = "red", size  = .5)+
   facet_wrap(~variable,scales = "free" , ncol = 2)+
-  theme(text = element_text(size = 15, face = "bold"))
+  theme(text = element_text(size = 15, face = "bold"))+
+  theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
+    axis.line = element_line(size=0.8, colour = "black"),
+    axis.text.x=element_text(colour="black", size = 12 ,angle = 90, vjust = 0.5, hjust=1),
+    axis.text.y=element_text(colour="black", size = 15),
+    axis.title.x = element_text(size = 12, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 15, margin = margin(t = 0, r = 20, b = 0, l = -1)), #axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 7))
+    text = element_text(size = 15, face = "bold"),
+    strip.background = element_rect(
+      color="black",size=1.5, linetype="solid"
+    )         
+  )
 
 
-
-
-
-
-
-
-## come back here
-## edge level
-E(g)$weight <- 1
-g <- simplify(g, edge.attr.comb="sum")
-
-## make the network
-dat <- ggnetwork(g)
-
-
-ggplot() +
-  geom_edges(data=dat, 
-             aes(x=x, y=y, xend=xend, yend=yend),
-             color="grey50", curvature=0.1, size=0.15, alpha=1/2) +
-  geom_nodes(data=dat,
-             aes(x=x, y=y, xend=xend, yend=yend, size=sqrt(weight)),
-             alpha=1/3) +
-  #geom_label_repel(data=unique(dat[dat$size>50,c(1,2,5)]),
-  #                 aes(x=x, y=y, label=vertex.names), 
-   #                size=2, color="#8856a7") +
-  theme_blank() +
-  theme(legend.position="none") -> gg
-
-
-svgPanZoom(svgPlot(show(gg), height=15, width=15), 
-           width="960px",
-           controlIconsEnabled=TRUE)
