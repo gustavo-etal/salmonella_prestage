@@ -533,6 +533,8 @@ names(pop)
 # the collumn Grower in the pop in not complete 
 # please make sure all names are there for the perfect match
 ##DAN & ANGIE WACHTER
+## salmonela time series
+salmo<-read_csv("./data/Growout_Bootie.csv");salmo
 
 data<-salmo%>%
   left_join(pop, by="Grower")
@@ -559,7 +561,7 @@ box<-data%>%filter(!Group==0)%>%
 ggplot() +
   geom_sf(data = nc,  colour = "grey", alpha = 0.005) +
   #coord_sf(xlim = lon_bounds, ylim = lat_bounds)+
-  geom_point(data = data %>% drop_na(Group)%>% filter(!Group==0)%>%
+  geom_point(data = data %>% drop_na(Group)%>%
                filter(!Group==0)%>%
                drop_na(LONG)%>%
                group_by(LONG,LAT)%>%
@@ -569,7 +571,7 @@ ggplot() +
   coord_sf(
     xlim = c(-79.9, -77.2),
     ylim = c(34.2, 35.4),
-    expand = FALSE)
+    expand = FALSE)+
   ggtitle("Salmonella distribution")+
   # geom_label_repel(data = data , nudge_x = 0, nudge_y = -0,
   #                  aes(x = LONG, 
@@ -577,6 +579,31 @@ ggplot() +
   #                      label = as.factor(Serotype)))+
   theme(axis.title = element_blank())
 
+
+# kernel for cases ignoring the group
+
+ggplot() +
+    geom_sf(data = nc,  colour = "grey", alpha = 0.005) +
+    #coord_sf(xlim = lon_bounds, ylim = lat_bounds)+
+    geom_point(data = data %>% 
+                 drop_na(Serotype)%>% 
+                 #filter(!Serotype==0)%>%
+                 drop_na(LONG)%>%
+                 group_by(LONG,LAT)%>%
+                 dplyr::count(Serotype, sort = TRUE)%>%
+                 mutate(n=as.numeric(n)),
+               aes(x = LONG,y = LAT,  color=Serotype))+
+    coord_sf(
+      xlim = c(-79.9, -77.2),
+      ylim = c(34.2, 35.4),
+      expand = FALSE)
+  ggtitle("Salmonella distribution")+
+    # geom_label_repel(data = data , nudge_x = 0, nudge_y = -0,
+    #                  aes(x = LONG, 
+    #                      y = LAT,
+    #                      label = as.factor(Serotype)))+
+    theme(axis.title = element_blank())
+  
 
 data%>%
   mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
@@ -605,6 +632,7 @@ g <- simplify(graph_from_data_frame
                 directed=TRUE))
 
 V(g)$size <- centralization.degree(g)$res
+#V(g)$size1 <- centralization.betweenness(g)$res1
 # add the weight to the edges
 E(g)$weight <- seq_len(ecount(g))
 
@@ -644,6 +672,22 @@ ggnet2(net0,
       mode = "circrand")+
   theme(legend.position = "bottom")
 
+
+#main population 
+salmo<-read_csv("./data/Growout_Bootie.csv");salmo
+
+re<-data %>% drop_na(Group)%>%
+  #filter(!Group==0)%>%
+  #drop_na(LONG)%>%
+  #group_by(LONG,LAT)%>%
+  dplyr::count(Group, sort = TRUE)%>%
+  mutate(n=as.numeric(n))
+
+
+# model 
+model<- lm(n ~ degree, data)
+
+# plot the degree by the number of cases
 
 ## cluster formation-----
 
@@ -709,7 +753,7 @@ data %>%
   #mutate(Date = as.Date(month)) %>%
   ggplot(aes(x= month, y = value))+
   geom_bar(stat = "identity",aes(fill = variable))+
-  #geom_point(colour = "red", size  = .5)+
+  geom_point(colour = "red", size  = .5)+
   facet_wrap(~variable,scales = "free" , ncol = 2)+
   theme(text = element_text(size = 15, face = "bold"))+
   theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
