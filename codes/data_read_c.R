@@ -137,7 +137,7 @@ theme(#axis.line.x = element_line(size = 0.4, colour = "black"),
 
 
 
-#ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 ## do also by the group
 tablegroup<-salmo%>%
@@ -174,6 +174,7 @@ salmo%>%
     )         
   )
 
+ggsave("./Fig/freq_Process_Date.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
 ## by serotype
@@ -204,7 +205,7 @@ salmo%>%
   )
 
 
-#ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
+ggsave("./Fig/freq_year_month_serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 
 ## by serotype
@@ -235,6 +236,9 @@ salmo%>%
   )
 
 
+ggsave("./Fig/freq_year_month_Group.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
+
+
 ## by farm type
 atbfree<-salmo%>%
   filter(!Serotype=="0" & Prod_Type=="Antibiotic-free")%>%
@@ -262,7 +266,7 @@ atbfree<-salmo%>%
     )         
   );atbfree
 
-
+ggsave("./Fig/freq_year_month_Serotype.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 commercial<-salmo%>%
   filter(!Serotype=="0" & Prod_Type=="Conventional")%>%
@@ -289,6 +293,8 @@ commercial<-salmo%>%
       color="black",size=1.5, linetype="solid"
     )         
   );commercial
+
+ggsave("./Fig/freq_year_month_Serotypecommercial.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 # group commercial with atb=free
 ggarrange(atbfree , commercial, nrow=2)
@@ -319,6 +325,8 @@ salmo%>%
       color="black",size=1.5, linetype="solid"
     )         
   )
+
+ggsave("./Fig/freq_year_month_Prod_Type.tiff",plot = last_plot(), dpi = 300, width = 390, height = 130, units = "mm")
 
 
 ## Table1 ### ########################################################################################
@@ -405,7 +413,7 @@ salmo%>%
     )         
   )
 
-#ggsave("./Fig/freq_year_month.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
+ggsave("./Fig/freq_year_monthSerotype.tiff",plot = last_plot(), dpi = 300, width = 290, height = 130, units = "mm")
 
 
 p<-salmo%>%
@@ -465,9 +473,9 @@ p1<-salmo%>%
     )         
   )
 
-ggarrange(p,p1)
+ggarrange(p,p1, nrow=2)
 
-#ggsave("./Fig/freq_prod_type.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+ggsave("./Fig/freq_prod_typeSerotypev.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
 
 
 salmo%>%
@@ -498,6 +506,8 @@ salmo%>%
     )         
   )
 
+ggsave("./Fig/freq_prod_Sex.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+
 salmo%>%
   dplyr::count(Prod_Type,Serotype, sort = TRUE)%>%
   drop_na()%>%
@@ -508,6 +518,8 @@ salmo%>%
   labs(x="Number of isolates", y="Production type")+
   theme(text = element_text(size = 12, face = "bold"),
         legend.title = element_text(size = 12))
+
+ggsave("./Fig/ProdSerotype.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
 
 
 salmo%>%
@@ -523,7 +535,7 @@ salmo%>%
 
 
 
-#ggsave("./Fig/freq_prod_type.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+ggsave("./Fig/freq_prod_typeSex.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
 
 
 ## join both data
@@ -579,6 +591,8 @@ ggplot() +
   #                      label = as.factor(Serotype)))+
   theme(axis.title = element_blank())
 
+ggsave("./Fig/map_group.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+
 
 # kernel for cases ignoring the group
 
@@ -596,14 +610,16 @@ ggplot() +
     coord_sf(
       xlim = c(-79.9, -77.2),
       ylim = c(34.2, 35.4),
-      expand = FALSE)
+      expand = FALSE)+
   ggtitle("Salmonella distribution")+
     # geom_label_repel(data = data , nudge_x = 0, nudge_y = -0,
     #                  aes(x = LONG, 
     #                      y = LAT,
     #                      label = as.factor(Serotype)))+
     theme(axis.title = element_blank())
-  
+
+ggsave("./Fig/map_sero.tiff",plot = last_plot(), dpi = 300, width = 190, height = 130, units = "mm")
+
 
 data%>%
   mutate(month = format(Process_Date, "%m"), year = format(Process_Date, "%Y"))%>%
